@@ -115,7 +115,7 @@ public:
     uint16_t abs_spi_dma_rx_[1];
     //Create abs spi dma buffers for ZSI's custom SPI driver
     uint8_t abs_spi_zsi_dma_tx_[5] = {0xA6, 0x00, 0x00, 0x00, 0x00};
-    uint8_t abs_spi_zsi_dma_rx_[5];
+    uint8_t abs_spi_zsi_dma_rx_[5] = {0x00, 0x00, 0x00, 0x00, 0x00};
     bool abs_spi_pos_updated_ = false;
     Mode_t mode_ = MODE_INCREMENTAL;
     GPIO_TypeDef* abs_spi_cs_port_;

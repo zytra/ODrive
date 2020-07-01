@@ -804,8 +804,16 @@ void start_analog_thread() {
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    if(hspi->pRxBuffPtr == (uint8_t*)axes[0]->encoder_.abs_spi_dma_rx_)
+    if (axes[0]->encoder_.mode_ == Encoder::MODE_SPI_ABS_ZSI || axes[1]->encoder_.mode_ == Encoder::MODE_SPI_ABS_ZSI) {
+        if(hspi->pRxBuffPtr == (uint8_t*)axes[0]->encoder_.abs_spi_zsi_dma_rx_)
+        axes[0]->encoder_.abs_spi_cb();
+    else if (hspi->pRxBuffPtr == (uint8_t*)axes[1]->encoder_.abs_spi_zsi_dma_rx_)
+        axes[1]->encoder_.abs_spi_cb();
+    }
+    else {
+        if(hspi->pRxBuffPtr == (uint8_t*)axes[0]->encoder_.abs_spi_dma_rx_)
         axes[0]->encoder_.abs_spi_cb();
     else if (hspi->pRxBuffPtr == (uint8_t*)axes[1]->encoder_.abs_spi_dma_rx_)
         axes[1]->encoder_.abs_spi_cb();
+    }
 }
