@@ -27,6 +27,7 @@ public:
         MODE_SPI_ABS_CUI = 0x100,   //!< compatible with CUI AMT23xx
         MODE_SPI_ABS_AMS = 0x101,   //!< compatible with AMS AS5047P, AS5048A/AS5048B (no daisy chain support)
         MODE_SPI_ABS_AEAT = 0x102,  //!< not yet implemented
+        MODE_SPI_ABS_ZSI = 0x103,   //!< compatible with ZSI's custom hardware
     };
     const uint32_t MODE_FLAG_ABS = 0x100;
 
@@ -112,6 +113,9 @@ public:
     void abs_spi_cs_pin_init();
     uint16_t abs_spi_dma_tx_[1] = {0xFFFF};
     uint16_t abs_spi_dma_rx_[1];
+    //Create abs spi dma buffers for ZSI's custom SPI driver
+    uint8_t abs_spi_zsi_dma_tx_[5] = {0xA6, 0x00, 0x00, 0x00, 0x00};
+    uint8_t abs_spi_zsi_dma_rx_[5];
     bool abs_spi_pos_updated_ = false;
     Mode_t mode_ = MODE_INCREMENTAL;
     GPIO_TypeDef* abs_spi_cs_port_;

@@ -311,6 +311,7 @@ void Encoder::sample_now() {
         case MODE_SPI_ABS_AMS:
         case MODE_SPI_ABS_CUI:
         case MODE_SPI_ABS_AEAT:
+        case MODE_SPI_ABS_ZSI:
         {
             axis_->motor_.log_timing(Motor::TIMING_LOG_SAMPLE_NOW);
             // Do nothing
@@ -341,6 +342,13 @@ bool Encoder::abs_spi_init(){
     if (mode_ == MODE_SPI_ABS_AEAT) {
         spi->Init.CLKPolarity = SPI_POLARITY_HIGH;
     }
+    if (mode_ == MODE_SPI_ABS_ZSI) {
+        spi->Init.Direction = SPI_DIRECTION_2LINES;
+        spi->Init.DataSize = SPI_DATASIZE_8BIT;
+        spi->Init.CLKPolarity = SPI_POLARITY_LOW;
+        spi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+        spi->Init.FirstBit = SPI_FIRSTBIT_MSB;
+    }
     HAL_SPI_DeInit(spi);
     HAL_SPI_Init(spi);
     return true;
@@ -354,7 +362,12 @@ bool Encoder::abs_spi_start_transaction(){
             return false;
         }
         HAL_GPIO_WritePin(abs_spi_cs_port_, abs_spi_cs_pin_, GPIO_PIN_RESET);
-        HAL_SPI_TransmitReceive_DMA(hw_config_.spi, (uint8_t*)abs_spi_dma_tx_, (uint8_t*)abs_spi_dma_rx_, 1);
+        if (mode_ == MODE_SPI_ABS_ZSI) {
+            HAL_SPI_TransmitReceive_DMA(hw_config_.spi, (uint8_t*)abs_spi_zsi_dma_tx_, (uint8_t*)abs_spi_zsi_dma_rx_, 5);
+        }
+        else {
+            HAL_SPI_TransmitReceive_DMA(hw_config_.spi, (uint8_t*)abs_spi_dma_tx_, (uint8_t*)abs_spi_dma_rx_, 1);
+        }
     }
     return true;
 }
@@ -379,7 +392,7 @@ void Encoder::abs_spi_cb(){
 
     axis_->motor_.log_timing(Motor::TIMING_LOG_SPI_END);
 
-    uint16_t pos;
+    uint32_t pos; //Changed from uint16_t to uint32_t by ZSI on 6/18/2020
 
     switch (mode_) {
         case MODE_SPI_ABS_AMS: {
@@ -398,6 +411,32 @@ void Encoder::abs_spi_cb(){
                 return;
             }
             pos = rawVal & 0x3fff;
+        } break;
+
+        case MODE_SPI_ABS_ZSI: {
+            uint32_t rawVal = 0 << 24 | abs_spi_zsi_dma_rx_[1] << 16 | abs_spi_zsi_dma_rx_[2] << 8 | abs_spi_zsi_dma_rx_[3];
+            // check CRC
+            abs_spi_zsi_dma_rx_[4] = (abs_spi_zsi_dma_rx_[4] & 0x3F) ^ 0x3F; // read last byte of message for CRC, clear bits 6:7, and then invert. Finally write it back into the buffer 
+            uint8_t zsi_crc_polynomial = 0x03;
+            uint8_t zsi_crc_verif = 0x37 << 2; // remainder(6 bit) initialized to 0x37 - must be shifted left by 2 bit to follow the data
+            for (int zsi_buf_count = 0; zsi_buf_count < 4; zsi_buf_count++) {
+                zsi_crc_verif ^= abs_spi_zsi_dma_rx_[zsi_buf_count + 1];
+                for (int zsi_bit_count = 0; zsi_bit_count < 8; zsi_bit_count++) {
+                    if (zsi_crc_verif & 0x80) {
+                        zsi_crc_verif <<= 1;
+                        zsi_crc_verif ^= zsi_crc_polynomial;
+                    }
+                    else {
+                        zsi_crc_verif <<= 1;
+                    }        
+                }
+            }
+            if (zsi_crc_verif == 0) {
+                pos = rawVal & 0x00FFFFFF;
+            }
+            else {
+                return;
+            }
         } break;
 
         default: {
@@ -469,6 +508,7 @@ bool Encoder::update() {
                 delta_enc -= 6283;
         } break;
         
+        case MODE_SPI_ABS_ZSI:
         case MODE_SPI_ABS_AMS:
         case MODE_SPI_ABS_CUI: 
         case MODE_SPI_ABS_AEAT: {
