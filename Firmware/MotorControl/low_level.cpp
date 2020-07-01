@@ -806,14 +806,14 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
     if (axes[0]->encoder_.mode_ == Encoder::MODE_SPI_ABS_ZSI || axes[1]->encoder_.mode_ == Encoder::MODE_SPI_ABS_ZSI) {
         if(hspi->pRxBuffPtr == (uint8_t*)axes[0]->encoder_.abs_spi_zsi_dma_rx_)
-        axes[0]->encoder_.abs_spi_cb();
-    else if (hspi->pRxBuffPtr == (uint8_t*)axes[1]->encoder_.abs_spi_zsi_dma_rx_)
-        axes[1]->encoder_.abs_spi_cb();
+            axes[0]->encoder_.abs_spi_cb();
+        else if (hspi->pRxBuffPtr == (uint8_t*)axes[1]->encoder_.abs_spi_zsi_dma_rx_)
+            axes[1]->encoder_.abs_spi_cb();
     }
     else {
         if(hspi->pRxBuffPtr == (uint8_t*)axes[0]->encoder_.abs_spi_dma_rx_)
-        axes[0]->encoder_.abs_spi_cb();
-    else if (hspi->pRxBuffPtr == (uint8_t*)axes[1]->encoder_.abs_spi_dma_rx_)
-        axes[1]->encoder_.abs_spi_cb();
+            axes[0]->encoder_.abs_spi_cb();
+        else if (hspi->pRxBuffPtr == (uint8_t*)axes[1]->encoder_.abs_spi_dma_rx_)
+            axes[1]->encoder_.abs_spi_cb();
     }
 }
