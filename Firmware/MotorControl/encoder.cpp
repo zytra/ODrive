@@ -346,7 +346,7 @@ bool Encoder::abs_spi_init(){
         spi->Init.Direction = SPI_DIRECTION_2LINES;
         spi->Init.DataSize = SPI_DATASIZE_8BIT;
         spi->Init.CLKPolarity = SPI_POLARITY_LOW;
-        spi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+        spi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
         spi->Init.FirstBit = SPI_FIRSTBIT_MSB;
     }
     HAL_SPI_DeInit(spi);
@@ -363,7 +363,7 @@ bool Encoder::abs_spi_start_transaction(){
         }
         HAL_GPIO_WritePin(abs_spi_cs_port_, abs_spi_cs_pin_, GPIO_PIN_RESET);
         if (mode_ == MODE_SPI_ABS_ZSI) {
-            HAL_SPI_TransmitReceive_DMA(hw_config_.spi, (uint8_t*)abs_spi_zsi_dma_tx_, (uint8_t*)abs_spi_zsi_dma_rx_, 5);
+            HAL_SPI_TransmitReceive_DMA(hw_config_.spi, (uint8_t*)abs_spi_zsi_dma_tx_, (uint8_t*)abs_spi_zsi_dma_rx_, 4);
         }
         else {
             HAL_SPI_TransmitReceive_DMA(hw_config_.spi, (uint8_t*)abs_spi_dma_tx_, (uint8_t*)abs_spi_dma_rx_, 1);
