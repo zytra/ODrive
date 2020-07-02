@@ -346,6 +346,7 @@ bool Encoder::abs_spi_init(){
         spi->Init.Direction = SPI_DIRECTION_2LINES;
         spi->Init.DataSize = SPI_DATASIZE_8BIT;
         spi->Init.CLKPolarity = SPI_POLARITY_LOW;
+        spi->Init.CLKPhase = SPI_PHASE_1EDGE;
         spi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
         spi->Init.FirstBit = SPI_FIRSTBIT_MSB;
     }
