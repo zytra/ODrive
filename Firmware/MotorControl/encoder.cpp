@@ -347,7 +347,7 @@ bool Encoder::abs_spi_init(){
         spi->Init.DataSize = SPI_DATASIZE_8BIT;
         spi->Init.CLKPolarity = SPI_POLARITY_LOW;
         spi->Init.CLKPhase = SPI_PHASE_1EDGE;
-        spi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+        spi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
         spi->Init.FirstBit = SPI_FIRSTBIT_MSB;
     }
     HAL_SPI_DeInit(spi);
@@ -432,12 +432,15 @@ void Encoder::abs_spi_cb(){
                     }        
                 }
             }
+            pos = rawVal & 0x00FFFFFF;
+            /*
             if (zsi_crc_verif == 0) {
                 pos = rawVal & 0x00FFFFFF;
             }
             else {
                 return;
             }
+            */
         } break;
 
         default: {
