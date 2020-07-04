@@ -432,7 +432,7 @@ void Encoder::abs_spi_cb(){
                     }        
                 }
             }
-            pos = rawVal & 0x00FFFFFF;
+            pos = rawVal & 0x00FFFFFF;           
             /*
             if (zsi_crc_verif == 0) {
                 pos = rawVal & 0x00FFFFFF;
