@@ -425,22 +425,19 @@ void Encoder::abs_spi_cb(){
                 for (int zsi_bit_count = 0; zsi_bit_count < 8; zsi_bit_count++) {
                     if (zsi_crc_verif & 0x80) {
                         zsi_crc_verif <<= 1;
-                        zsi_crc_verif ^= zsi_crc_polynomial;
+                        zsi_crc_verif ^= zsi_crc_polynomial << 2;
                     }
                     else {
                         zsi_crc_verif <<= 1;
                     }        
                 }
-            }
-            pos = rawVal & 0x00FFFFFF;           
-            /*
+            }           
             if (zsi_crc_verif == 0) {
                 pos = rawVal & 0x00FFFFFF;
             }
             else {
                 return;
             }
-            */
         } break;
 
         default: {
