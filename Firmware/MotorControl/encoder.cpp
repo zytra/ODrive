@@ -417,9 +417,9 @@ void Encoder::abs_spi_cb(){
         case MODE_SPI_ABS_ZSI: {
             uint32_t rawVal = 0 << 24 | abs_spi_zsi_dma_rx_[1] << 16 | abs_spi_zsi_dma_rx_[2] << 8 | abs_spi_zsi_dma_rx_[3];
             // check CRC
-            abs_spi_zsi_dma_rx_[4] = (abs_spi_zsi_dma_rx_[4] & 0x3F) ^ 0x3F; // read last byte of message for CRC, clear bits 6:7, and then invert. Finally write it back into the buffer 
+            abs_spi_zsi_dma_rx_[4] ^= 0x3F; // invert bit 0-5 
             uint8_t zsi_crc_polynomial = 0x03;
-            uint8_t zsi_crc_verif = 0x37 << 2; // remainder(6 bit) initialized to 0x37 - must be shifted left by 2 bit to follow the data
+            uint8_t zsi_crc_verif = 0x00; // init to 0x00
             for (int zsi_buf_count = 0; zsi_buf_count < 4; zsi_buf_count++) {
                 zsi_crc_verif ^= abs_spi_zsi_dma_rx_[zsi_buf_count + 1];
                 for (int zsi_bit_count = 0; zsi_bit_count < 8; zsi_bit_count++) {
@@ -434,6 +434,12 @@ void Encoder::abs_spi_cb(){
             }           
             if (zsi_crc_verif == 0) {
                 pos = rawVal & 0x00FFFFFF;
+                /*
+                if (abs_spi_zsi_dma_rx_[4] & 0x40)
+                    set_error(ERROR_ABS_ZSI_WARNING);
+                if (abs_spi_zsi_dma_rx_[4] & 0x80)
+                    set_error(ERROR_ABS_ZSI_ERROR);
+                */
             }
             else {
                 return;
