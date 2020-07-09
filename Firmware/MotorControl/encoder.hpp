@@ -19,7 +19,7 @@ public:
         ERROR_ABS_SPI_COM_FAIL = 0x80,
         ERROR_ABS_SPI_NOT_READY = 0x100,
         ERROR_ABS_ZSI_WARNING = 0x200,
-        ERROR_ABS_ZSI_ERROR = 0x600,
+        ERROR_ABS_ZSI_ERROR = 0x400,
     };
 
     enum Mode_t {
