@@ -233,7 +233,7 @@ void ASCII_protocol_process_line(const uint8_t* buffer, size_t len, StreamSink& 
             if (!endpoint) {
                 respond(response_channel, use_checksum, "invalid property");
             } else {
-                char response[12];
+                char response[11];
                 bool success = endpoint->get_string(response, sizeof(response));
                 if (!success)
                     respond(response_channel, use_checksum, "not implemented");

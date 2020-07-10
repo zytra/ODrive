@@ -575,7 +575,7 @@ static bool to_string(const T& value, char * buffer, size_t length, int) {
 // Special case for float because printf promotes float to double, and we get warnings
 template<typename T = float>
 static bool to_string(const float& value, char * buffer, size_t length, int) {
-    snprintf(buffer, length, "%f", (double)value);
+    snprintf(buffer, length, "%10.8f", (double)value); //%f //%e
     return true;
 }
 template<typename T = bool>
