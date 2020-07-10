@@ -345,7 +345,7 @@ bool Controller::update(float* current_setpoint_output) {
             vel_integrator_current_ += ((vel_integrator_gain * gain_scheduling_multiplier) * current_meas_period) * v_err;
         }
     }
-
+    iq_controller_ = Iq;
     if (current_setpoint_output) *current_setpoint_output = Iq;
     return true;
 }

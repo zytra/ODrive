@@ -121,6 +121,9 @@ public:
 
     bool anticogging_valid_ = false;
 
+    // iq controller
+    float iq_controller_ = 0.0f;
+
     // Communication protocol definitions
     auto make_protocol_definitions() {
         return make_protocol_member_list(
@@ -136,6 +139,7 @@ public:
             make_protocol_property("vel_integrator_current", &vel_integrator_current_),
             make_protocol_property("anticogging_valid", &anticogging_valid_),
             make_protocol_property("gain_scheduling_width", &config_.gain_scheduling_width),
+            make_protocol_property("iq_controller", &iq_controller_),
             make_protocol_object("config",
                 make_protocol_property("enable_vel_limit", &config_.enable_vel_limit),
                 make_protocol_property("enable_current_mode_vel_limit", &config_.enable_current_vel_limit),
