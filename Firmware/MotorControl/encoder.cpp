@@ -181,6 +181,8 @@ bool Encoder::run_direction_find() {
 // and the encoder state 0.
 // TODO: Do the scan with current, not voltage!
 bool Encoder::run_offset_calibration() {
+    //offset_calib_flag_ = true;
+    
     static const float start_lock_duration = 1.0f;
     static const int num_steps = (int)(config_.calib_scan_distance / config_.calib_scan_omega * (float)current_meas_hz);
 
@@ -277,6 +279,8 @@ bool Encoder::run_offset_calibration() {
     int32_t residual = encvaluesum - ((int64_t)config_.offset * (int64_t)(num_steps * 2));
     config_.offset_float = (float)residual / (float)(num_steps * 2) + 0.5f;  // add 0.5 to center-align state to phase
 
+    //offset_calib_flag_ = false;
+    //zsi_run_avg_init_counter_ = 0;
     is_ready_ = true;
     return true;
 }
@@ -433,30 +437,37 @@ void Encoder::abs_spi_cb(){
                 }
             }           
             if (zsi_crc_verif == 0) {
-                // if not all samples have been collected, only collect/initialize but do not average yet
-                if (zsi_run_avg_init_counter_ < zsi_run_avg_samples_) {
-                    zsi_run_avg_data_[zsi_run_avg_init_counter_] = rawVal & 0x00FFFFFF;
-                    zsi_run_avg_init_counter_++;
+                pos = rawVal & 0x00FFFFFF;
+                /*
+                if (offset_calib_flag_)
                     pos = rawVal & 0x00FFFFFF;
-                }
-                // enough samples have been collected, shift samples to make room for the newest sample, then add them up, then average
                 else {
-                    zsi_run_avg_ = 0.0f;
-                    for (int zsi_run_avg_counter = 0; zsi_run_avg_counter < zsi_run_avg_samples_ - 1; zsi_run_avg_counter++) {
-                        // shift samples from 0 to N - 2
-                        zsi_run_avg_data_[zsi_run_avg_counter] = zsi_run_avg_data_[zsi_run_avg_counter + 1];
-                        // add samples
-                        zsi_run_avg_ += zsi_run_avg_data_[zsi_run_avg_counter];
+                    // if not all samples have been collected, only collect/initialize but do not average yet
+                    if (zsi_run_avg_init_counter_ < zsi_run_avg_samples_) {
+                        zsi_run_avg_data_[zsi_run_avg_init_counter_] = rawVal & 0x00FFFFFF;
+                        zsi_run_avg_init_counter_++;
+                        pos = rawVal & 0x00FFFFFF;
                     }
-                    // new sample copied into N - 1
-                    zsi_run_avg_data_[zsi_run_avg_samples_ - 1] = rawVal & 0x00FFFFFF;
-                    // add last sample to the total
-                    zsi_run_avg_ += zsi_run_avg_data_[zsi_run_avg_samples_ - 1];
-                    // average
-                    zsi_run_avg_ /= zsi_run_avg_samples_;
-                    // round up float to nearest uint32_t
-                    pos = (uint32_t)zsi_run_avg_;
+                    // enough samples have been collected, shift samples to make room for the newest sample, then add them up, then average
+                    else {
+                        float zsi_run_avg_ = 0.0f;
+                        for (int zsi_run_avg_counter = 0; zsi_run_avg_counter < zsi_run_avg_samples_ - 1; zsi_run_avg_counter++) {
+                            // shift samples from 0 to N - 2
+                            zsi_run_avg_data_[zsi_run_avg_counter] = zsi_run_avg_data_[zsi_run_avg_counter + 1];
+                            // add samples
+                            zsi_run_avg_ += zsi_run_avg_data_[zsi_run_avg_counter];
+                        }
+                        // new sample copied into N - 1
+                        zsi_run_avg_data_[zsi_run_avg_samples_ - 1] = rawVal & 0x00FFFFFF;
+                        // add last sample to the total
+                        zsi_run_avg_ += zsi_run_avg_data_[zsi_run_avg_samples_ - 1];
+                        // average
+                        zsi_run_avg_ /= zsi_run_avg_samples_;
+                        // round up float to nearest uint32_t
+                        pos = (uint32_t)zsi_run_avg_;
+                    }
                 }
+                */
             }
             else {
                 return;

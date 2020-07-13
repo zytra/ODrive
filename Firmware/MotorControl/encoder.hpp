@@ -116,10 +116,12 @@ public:
     //Create abs spi dma buffers for ZSI's custom SPI driver
     uint8_t abs_spi_zsi_dma_tx_[5] = {0xA6, 0x00, 0x00, 0x00, 0x00};
     uint8_t abs_spi_zsi_dma_rx_[5] = {0x00, 0x00, 0x00, 0x00, 0x00};
+    /*
     uint32_t zsi_run_avg_data_[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     uint8_t zsi_run_avg_samples_ = 8;
     uint8_t zsi_run_avg_init_counter_ = 0;
-    float zsi_run_avg_ = 0.0f;
+    bool offset_calib_flag_ = false;
+    */
     bool abs_spi_pos_updated_ = false;
     Mode_t mode_ = MODE_INCREMENTAL;
     GPIO_TypeDef* abs_spi_cs_port_;
