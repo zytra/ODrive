@@ -433,13 +433,30 @@ void Encoder::abs_spi_cb(){
                 }
             }           
             if (zsi_crc_verif == 0) {
-                pos = rawVal & 0x00FFFFFF;
-                /*
-                if (abs_spi_zsi_dma_rx_[4] & 0x40)
-                    set_error(ERROR_ABS_ZSI_WARNING);
-                if (abs_spi_zsi_dma_rx_[4] & 0x80)
-                    set_error(ERROR_ABS_ZSI_ERROR);
-                */
+                // if not all samples have been collected, only collect/initialize but do not average yet
+                if (zsi_run_avg_init_counter_ < zsi_run_avg_samples_) {
+                    zsi_run_avg_data_[zsi_run_avg_init_counter_] = rawVal & 0x00FFFFFF;
+                    zsi_run_avg_init_counter_++;
+                    pos = rawVal & 0x00FFFFFF;
+                }
+                // enough samples have been collected, shift samples to make room for the newest sample, then add them up, then average
+                else {
+                    zsi_run_avg_ = 0.0f;
+                    for (int zsi_run_avg_counter = 0; zsi_run_avg_counter < zsi_run_avg_samples_ - 1; zsi_run_avg_counter++) {
+                        // shift samples from 0 to N - 2
+                        zsi_run_avg_data_[zsi_run_avg_counter] = zsi_run_avg_data_[zsi_run_avg_counter + 1];
+                        // add samples
+                        zsi_run_avg_ += zsi_run_avg_data_[zsi_run_avg_counter];
+                    }
+                    // new sample copied into N - 1
+                    zsi_run_avg_data_[zsi_run_avg_samples_ - 1] = rawVal & 0x00FFFFFF;
+                    // add last sample to the total
+                    zsi_run_avg_ += zsi_run_avg_data_[zsi_run_avg_samples_ - 1];
+                    // average
+                    zsi_run_avg_ /= zsi_run_avg_samples_;
+                    // round up float to nearest uint32_t
+                    pos = (uint32_t)zsi_run_avg_;
+                }
             }
             else {
                 return;
