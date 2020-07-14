@@ -545,6 +545,8 @@ bool Encoder::update() {
     if(mode_ & MODE_FLAG_ABS)
         count_in_cpr_ = pos_abs_latched;
 
+    bool snap_to_zero_vel = false;
+
     // ZSI Kalman filter
     if (mode_ == MODE_SPI_ABS_ZSI) {
         // shadow_count_        uint32_t, non filtered, non wrapping position data
@@ -558,7 +560,7 @@ bool Encoder::update() {
         vel_estimate_ = (pos_estimate_ - kalman_last_estimate_) / current_meas_period;
         pos_cpr_ += pos_estimate_ - kalman_last_estimate_;
         pos_cpr_ = fmodf_pos(pos_cpr_, (float)(config_.cpr));
-        kalman_last_estimate_ = pos_estimate_;
+        kalman_last_estimate_ = pos_estimate_; 
     }
     // Default ODrive PLL based filter
     else {
@@ -575,7 +577,6 @@ bool Encoder::update() {
         pos_cpr_ += current_meas_period * pll_kp_ * delta_pos_cpr;
         pos_cpr_ = fmodf_pos(pos_cpr_, (float)(config_.cpr));
         vel_estimate_ += current_meas_period * pll_ki_ * delta_pos_cpr;
-        bool snap_to_zero_vel = false;
         if (std::abs(vel_estimate_) < 0.5f * current_meas_period * pll_ki_) {
             vel_estimate_ = 0.0f;  //align delta-sigma on zero to prevent jitter
             snap_to_zero_vel = true;
