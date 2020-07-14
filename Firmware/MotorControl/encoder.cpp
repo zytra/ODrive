@@ -556,10 +556,12 @@ bool Encoder::update() {
         // Kalman on Velocity
         pos_estimate_ = (float)shadow_count_;
         kalman_gain_ = kalman_err_estimate_ / (kalman_err_estimate_ + config_.kalman_r);
-        vel_estimate_ = kalman_last_estimate_ + kalman_gain_ * (((float)shadow_count_ - shadow_count_last_) / current_meas_period - kalman_last_estimate_);
+        vel_estimate_ = kalman_last_estimate_ + kalman_gain_ * ((pos_estimate_ - shadow_count_last_) / current_meas_period - kalman_last_estimate_);
         kalman_err_estimate_ = (1 - kalman_gain_) * kalman_err_estimate_ + fabsf(vel_estimate_ - kalman_last_estimate_) * config_.kalman_q;
         kalman_last_estimate_ = vel_estimate_;
 
+        pos_cpr_ += pos_estimate_ - shadow_count_last_;
+        pos_cpr_ = fmodf_pos(pos_cpr_, (float)(config_.cpr));
         shadow_count_last_ = pos_estimate_;
         /*
         // Kalman on position
