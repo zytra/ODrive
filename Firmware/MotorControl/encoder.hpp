@@ -113,9 +113,15 @@ public:
     void abs_spi_cs_pin_init();
     uint16_t abs_spi_dma_tx_[1] = {0xFFFF};
     uint16_t abs_spi_dma_rx_[1];
-    //Create abs spi dma buffers for ZSI's custom SPI driver
+    // ZSI specific variables
     uint8_t abs_spi_zsi_dma_tx_[5] = {0xA6, 0x00, 0x00, 0x00, 0x00};
     uint8_t abs_spi_zsi_dma_rx_[5] = {0x00, 0x00, 0x00, 0x00, 0x00};
+    float kalman_r_ = 5.0f;
+    float kalman_q_ = 0.01f;
+    float kalman_err_estimate_ = 5.0f;
+    float kalman_gain_ = 0.5f;
+    float kalman_last_estimate_ = 0.0f
+
     bool abs_spi_pos_updated_ = false;
     Mode_t mode_ = MODE_INCREMENTAL;
     GPIO_TypeDef* abs_spi_cs_port_;

@@ -545,24 +545,44 @@ bool Encoder::update() {
     if(mode_ & MODE_FLAG_ABS)
         count_in_cpr_ = pos_abs_latched;
 
-    //// run pll (for now pll is in units of encoder counts)
-    // Predict current pos
-    pos_estimate_ += current_meas_period * vel_estimate_;
-    pos_cpr_      += current_meas_period * vel_estimate_;
-    // discrete phase detector
-    float delta_pos = (float)(shadow_count_ - (int32_t)std::floor(pos_estimate_));
-    float delta_pos_cpr = (float)(count_in_cpr_ - (int32_t)std::floor(pos_cpr_));
-    delta_pos_cpr = wrap_pm(delta_pos_cpr, 0.5f * (float)(config_.cpr));
-    // pll feedback
-    pos_estimate_ += current_meas_period * pll_kp_ * delta_pos;
-    pos_cpr_ += current_meas_period * pll_kp_ * delta_pos_cpr;
-    pos_cpr_ = fmodf_pos(pos_cpr_, (float)(config_.cpr));
-    vel_estimate_ += current_meas_period * pll_ki_ * delta_pos_cpr;
-    bool snap_to_zero_vel = false;
-    if (std::abs(vel_estimate_) < 0.5f * current_meas_period * pll_ki_) {
-        vel_estimate_ = 0.0f;  //align delta-sigma on zero to prevent jitter
-        snap_to_zero_vel = true;
+    // ZSI Kalman filter
+    if (mode_ == MODE_SPI_ABS_ZSI) {
+        // shadow_count_        uint32_t, non filtered, non wrapping position data
+        // count_in_cpr_        uint32_t, non filtered, wrapped position data
+        // pos_estimate_        float, filtered, non wrapping position data
+        // pos_cpr_             float, filtered, wrapped position data
+        kalman_gain_ = kalman_err_estimate_ / (kalman_err_estimate_ + kalman_r_);
+        pos_estimate_ = kalman_last_estimate_ + kalman_gain_ * ((float)shadow_count_ - kalman_last_estimate_);
+        kalman_err_estimate_ = (1 - kalman_gain_) * kalman_err_estimate_ + fabsf(pos_estimate_ - kalman_last_estimate_) * kalman_q_;
+        
+        vel_estimate_ = (pos_estimate_ - kalman_last_estimate_) / current_meas_period;
+        pos_cpr_ += pos_estimate_ - kalman_last_estimate_;
+        pos_cpr_ = fmodf_pos(pos_cpr_, (float)(config_.cpr));
+        kalman_last_estimate_ = pos_estimate_;
     }
+    // Default ODrive PLL based filter
+    else {
+        //// run pll (for now pll is in units of encoder counts)
+        // Predict current pos
+        pos_estimate_ += current_meas_period * vel_estimate_;
+        pos_cpr_      += current_meas_period * vel_estimate_;
+        // discrete phase detector
+        float delta_pos = (float)(shadow_count_ - (int32_t)std::floor(pos_estimate_));
+        float delta_pos_cpr = (float)(count_in_cpr_ - (int32_t)std::floor(pos_cpr_));
+        delta_pos_cpr = wrap_pm(delta_pos_cpr, 0.5f * (float)(config_.cpr));
+        // pll feedback
+        pos_estimate_ += current_meas_period * pll_kp_ * delta_pos;
+        pos_cpr_ += current_meas_period * pll_kp_ * delta_pos_cpr;
+        pos_cpr_ = fmodf_pos(pos_cpr_, (float)(config_.cpr));
+        vel_estimate_ += current_meas_period * pll_ki_ * delta_pos_cpr;
+        bool snap_to_zero_vel = false;
+        if (std::abs(vel_estimate_) < 0.5f * current_meas_period * pll_ki_) {
+            vel_estimate_ = 0.0f;  //align delta-sigma on zero to prevent jitter
+            snap_to_zero_vel = true;
+        }
+    }
+
+    
 
     //// run encoder count interpolation
     int32_t corrected_enc = count_in_cpr_ - config_.offset;
