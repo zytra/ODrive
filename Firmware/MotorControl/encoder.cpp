@@ -553,9 +553,9 @@ bool Encoder::update() {
         // count_in_cpr_        uint32_t, non filtered, wrapped position data
         // pos_estimate_        float, filtered, non wrapping position data
         // pos_cpr_             float, filtered, wrapped position data
-        kalman_gain_ = kalman_err_estimate_ / (kalman_err_estimate_ + kalman_r_);
+        kalman_gain_ = kalman_err_estimate_ / (kalman_err_estimate_ + config_.kalman_r);
         pos_estimate_ = kalman_last_estimate_ + kalman_gain_ * ((float)shadow_count_ - kalman_last_estimate_);
-        kalman_err_estimate_ = (1 - kalman_gain_) * kalman_err_estimate_ + fabsf(pos_estimate_ - kalman_last_estimate_) * kalman_q_;
+        kalman_err_estimate_ = (1 - kalman_gain_) * kalman_err_estimate_ + fabsf(pos_estimate_ - kalman_last_estimate_) * config_.kalman_q;
         
         vel_estimate_ = (pos_estimate_ - kalman_last_estimate_) / current_meas_period;
         pos_cpr_ += pos_estimate_ - kalman_last_estimate_;

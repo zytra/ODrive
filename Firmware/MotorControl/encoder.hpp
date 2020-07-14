@@ -54,6 +54,9 @@ public:
         uint16_t abs_spi_cs_gpio_pin = 1;
         uint16_t sincos_gpio_pin_sin = 3;
         uint16_t sincos_gpio_pin_cos = 4;
+        // kalman gains
+        float kalman_r = 5.0f;
+        float kalman_q = 0.01f;
     };
 
     Encoder(const EncoderHardwareConfig_t& hw_config,
@@ -116,8 +119,6 @@ public:
     // ZSI specific variables
     uint8_t abs_spi_zsi_dma_tx_[5] = {0xA6, 0x00, 0x00, 0x00, 0x00};
     uint8_t abs_spi_zsi_dma_rx_[5] = {0x00, 0x00, 0x00, 0x00, 0x00};
-    float kalman_r_ = 5.0f;
-    float kalman_q_ = 0.01f;
     float kalman_err_estimate_ = 5.0f;
     float kalman_gain_ = 0.5f;
     float kalman_last_estimate_ = 0.0f;
@@ -174,7 +175,9 @@ public:
                 make_protocol_property("idx_search_unidirectional", &config_.idx_search_unidirectional),
                 make_protocol_property("ignore_illegal_hall_state", &config_.ignore_illegal_hall_state),
                 make_protocol_property("sincos_gpio_pin_sin", &config_.sincos_gpio_pin_sin),
-                make_protocol_property("sincos_gpio_pin_cos", &config_.sincos_gpio_pin_cos)
+                make_protocol_property("sincos_gpio_pin_cos", &config_.sincos_gpio_pin_cos),
+                make_protocol_property("kalman_r", &config_.kalman_r),
+                make_protocol_property("kalman_q", &config_.kalman_q)
             ),
             make_protocol_function("set_linear_count", *this, &Encoder::set_linear_count, "count")
         );
