@@ -122,6 +122,7 @@ public:
     float kalman_err_estimate_ = 5.0f;
     float kalman_gain_ = 0.5f;
     float kalman_last_estimate_ = 0.0f;
+    float shadow_count_last_ = 0.0f;
 
     bool abs_spi_pos_updated_ = false;
     Mode_t mode_ = MODE_INCREMENTAL;
