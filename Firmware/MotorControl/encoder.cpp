@@ -560,8 +560,8 @@ bool Encoder::update() {
         kalman_err_estimate_ = (1 - kalman_gain_) * kalman_err_estimate_ + fabsf(vel_estimate_ - kalman_last_estimate_) * config_.kalman_q;
         kalman_last_estimate_ = vel_estimate_;
 
-        pos_cpr_ += pos_estimate_ - shadow_count_last_;
-        pos_cpr_ = fmodf_pos(pos_cpr_, (float)(config_.cpr));
+        pos_cpr_ = count_in_cpr_;
+        
         shadow_count_last_ = pos_estimate_;
         /*
         // Kalman on position
